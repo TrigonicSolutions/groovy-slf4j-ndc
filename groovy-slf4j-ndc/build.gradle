@@ -1,0 +1,87 @@
+apply plugin: 'maven'
+apply plugin: 'signing'
+
+def props = new Properties();
+def localProperties = new File("local.properties")
+if (localProperties.exists()) localProperties.withInputStream { props.load(it) }
+props.each { project.setProperty(it.key, it.value) }
+
+configurations {
+    deployerJars
+}
+
+dependencies {
+    deployerJars 'org.apache.maven.wagon:wagon-http:1.0-beta-7'
+}
+
+task packageJavadoc(type: Jar, dependsOn: 'javadoc') {
+    from javadoc.destinationDir
+    classifier = 'javadoc'
+}
+
+task packageSources(type: Jar) {
+    from sourceSets.main.allSource
+    classifier = 'sources'
+}
+
+artifacts {
+    archives jar
+    archives packageJavadoc
+    archives packageSources
+}
+
+signing {
+    sign configurations.archives
+}
+
+uploadArchives {
+    repositories.mavenDeployer {
+        configuration = configurations.deployerJars
+
+        beforeDeployment { MavenDeployment deployment -> signPom(deployment) }
+
+        repository(url: 'https://oss.sonatype.org/service/local/staging/deploy/maven2') {
+            authentication(userName: props.get('maven.repository.user'), password: props.get('maven.repository.password'))
+        }
+
+        pom.project {
+            name 'groovy-slf4j-ndc - Groovy-based tool for emulating NDC in slf4j using MDC'
+            packaging 'jar'
+            description 'Emulates nested diagnostic context (NDC) in slf4j and Groovy using mapped diagnostic context (MDC).'
+            url 'https://github.com/TrigonicSolutions/groovy-slf4j-ndc'
+            inceptionYear '2012'
+
+            parent {
+                groupId 'org.sonatype.oss'
+                artifactId 'oss-parent'
+                version '7'
+            }
+     
+            scm {
+                url 'scm:git://github.com/TrigonicSolutions/groovy-slf4j-ndc.git'
+                connection 'scm:git://github.com/TrigonicSolutions/groovy-slf4j-ndc.git'
+            }
+     
+            licenses {
+                license {
+                    name 'The Apache Software License, Version 2.0'
+                    url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    distribution 'repo'
+                }
+            }
+     
+            developers {
+                developer {
+                    id 'akrueger'
+                    name 'Alan Krueger'
+                    email 'alan@trigonic.com'
+                    roles{
+                        role 'Developer'
+                    }
+                    timezone '-6'
+                }
+            }
+        }
+    }
+}
+

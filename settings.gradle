@@ -1,0 +1,1 @@
+include 'groovy-slf4j-ndc', 'groovy-slf4j-ndc-test'
