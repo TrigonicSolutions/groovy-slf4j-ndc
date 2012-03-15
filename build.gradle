@@ -1,9 +1,9 @@
 
-group = 'com.trigonic'
-artifact = 'groovy-slf4j-ndc'
-version = '0.1'
-
 subprojects {
+    group = 'com.trigonic'
+    artifact = 'groovy-slf4j-ndc'
+    version = '0.1'
+
     apply plugin: 'groovy'
     apply plugin: 'eclipse'
 
